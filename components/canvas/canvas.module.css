@@ -1,0 +1,1533 @@
+.canvasRoot {
+  --canvas-glass-bg: color-mix(in srgb, var(--panel) 72%, transparent);
+  --canvas-glass-border: color-mix(in srgb, var(--line) 78%, transparent);
+  --canvas-glass-hover: color-mix(in srgb, var(--muted-panel) 88%, var(--panel));
+  --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  min-height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    ui-sans-serif,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  letter-spacing: 0;
+}
+
+.canvasListScaleRoot {
+  width: calc(100vw / var(--app-scale));
+  height: calc(100dvh / var(--app-scale));
+  overflow: hidden;
+}
+
+.canvasListScrollRoot {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.canvasWorkspaceScaleRoot {
+  width: calc(100vw / var(--app-scale));
+  height: calc(100dvh / var(--app-scale));
+  min-height: 0;
+}
+
+.canvasWorkspaceScaleRoot .workspace {
+  height: 100%;
+}
+
+.mono {
+  font-family: var(--mono);
+}
+
+.canvasRoot button,
+.canvasRoot input,
+.canvasRoot textarea {
+  font: inherit;
+}
+
+.canvasRoot :where(button) {
+  border: 0;
+  cursor: pointer;
+  transition:
+    transform 140ms var(--ease-out),
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.canvasRoot :where(button:active) {
+  transform: scale(0.97);
+}
+
+.topNav {
+  position: fixed;
+  left: 84px;
+  right: 0;
+  top: 0;
+  z-index: 60;
+  display: flex;
+  height: 90px;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--text);
+  padding: 0 40px;
+}
+
+.topNavLinks {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 31px;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.topNavLinkMuted {
+  color: #8e97a7;
+  transition: color 160ms ease;
+}
+
+.topNavLinkActive {
+  color: var(--text);
+  transition: color 160ms ease;
+}
+
+.topNavLinkMuted:hover,
+.topNavLinkActive:hover {
+  color: var(--text);
+}
+
+.topNavSlash {
+  color: var(--line);
+  font-weight: 400;
+}
+
+.topNavDot {
+  color: var(--line);
+  font-weight: 400;
+}
+
+.topNavLeft {
+  display: flex;
+  align-items: center;
+}
+
+.topNavRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.topNavIconButton {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.topNavIconButton:hover {
+  color: var(--text);
+}
+
+.topNavAnalyze {
+  color: var(--text);
+  text-decoration-line: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 4px;
+  transition: text-decoration-color 160ms ease;
+}
+
+.topNavAnalyze:hover {
+  text-decoration-color: var(--text);
+}
+
+.topNavCreate {
+  position: relative;
+  display: flex;
+  height: 44px;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 8px;
+  background: var(--button);
+  color: var(--button-text);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 650;
+  padding: 0 20px;
+  transition: transform 300ms var(--ease-out);
+}
+
+.topNavCreate::before {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0);
+  content: "";
+  transition: background-color 300ms var(--ease-out);
+}
+
+.topNavCreate:hover::before {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.topNavCreate > * {
+  position: relative;
+  z-index: 1;
+}
+
+.listPage {
+  min-height: 100%;
+  padding: 60px 72px 128px;
+}
+
+.canvasGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 453px);
+  align-items: start;
+  gap: 40px;
+}
+
+.canvasCardShell {
+  position: relative;
+  width: 453px;
+}
+
+.canvasCard {
+  display: block;
+  width: 453px;
+  height: 360px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 0;
+  text-align: left;
+  color: var(--text);
+  box-shadow: none;
+}
+
+.canvasCard:hover {
+  border-color: var(--text);
+  background: color-mix(in srgb, var(--muted-panel) 54%, var(--panel));
+}
+
+.canvasCardEditButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 12;
+  display: inline-flex;
+  height: 48px;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  border-radius: 7px;
+  background-color: rgba(232, 232, 232, 0.9);
+  color: #171a22;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 16px;
+  opacity: 0;
+  padding: 0 16px;
+  pointer-events: none;
+  transform: translateY(-2px);
+  transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out), background-color 180ms ease;
+  backdrop-filter: blur(18px) saturate(120%);
+  -webkit-backdrop-filter: blur(18px) saturate(120%);
+}
+
+.canvasCardShell:hover .canvasCardEditButton,
+.canvasCardEditButtonOpen {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.canvasCardEditButton:hover {
+  background-color: rgba(255, 255, 255, 0.96);
+}
+
+.canvasCardEditButton:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.canvasCardMenu {
+  position: absolute;
+  top: 72px;
+  right: 12px;
+  z-index: 18;
+  width: 360px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.62);
+  box-shadow: none;
+  color: #111827;
+  padding: 8px;
+  backdrop-filter: blur(18px) saturate(125%);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
+}
+
+.canvasCardMenuItem {
+  display: flex;
+  width: 100%;
+  height: 56px;
+  align-items: center;
+  gap: 16px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: #111827;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 16px;
+  padding: 0 16px;
+  text-align: left;
+  transition: background-color 160ms ease;
+}
+
+.canvasCardMenuItem:hover {
+  background-color: rgba(17, 24, 39, 0.065);
+}
+
+.canvasCardMenuDanger {
+  color: #ff3b3b;
+}
+
+.canvasCardMenuDanger:hover {
+  background-color: rgba(255, 59, 48, 0.08);
+}
+
+.canvasCardMenuDivider {
+  height: 1px;
+  margin: 8px 0;
+  background: rgba(17, 24, 39, 0.1);
+}
+
+.canvasThumb {
+  --thumb-grid-size: 20px;
+  --thumb-grid-x: 0px;
+  --thumb-grid-y: 0px;
+  position: relative;
+  height: 270px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+  background:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px),
+    color-mix(in srgb, var(--muted-panel) 46%, var(--panel));
+  background-position: var(--thumb-grid-x) var(--thumb-grid-y);
+  background-size: var(--thumb-grid-size) var(--thumb-grid-size);
+}
+
+.canvasThumbNode {
+  position: absolute;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--line) 85%, transparent);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 10px 26px rgba(17, 24, 39, 0.08);
+}
+
+.thumbNote {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.thumbWebsiteBar {
+  display: block;
+  height: clamp(5px, 12%, 14px);
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.thumbWebsiteBody {
+  position: absolute;
+  inset: clamp(5px, 12%, 14px) 0 0;
+  display: block;
+  overflow: hidden;
+  background: #fff;
+}
+
+.thumbNoteHeader {
+  display: block;
+  height: clamp(6px, 18%, 18px);
+  border-bottom: 1px solid var(--line);
+  background: var(--muted-panel);
+}
+
+.thumbNoteLine {
+  display: block;
+  overflow: hidden;
+  padding: 7px 8px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.canvasInfo {
+  display: flex;
+  height: 90px;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 22px;
+  background: var(--panel);
+}
+
+.canvasCopy {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+}
+
+.canvasTitle {
+  display: block;
+  overflow: hidden;
+  margin: 0;
+  max-width: 100%;
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 650;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.canvasEdited {
+  display: block;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 14px;
+}
+
+.emptyState {
+  grid-column: 1 / -1;
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  color: var(--muted);
+  font-family: var(--mono);
+  padding: 42px;
+  text-align: center;
+}
+
+.bottomCreateCanvas {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  z-index: 40;
+  display: grid;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+  transform: translateX(-50%);
+  border: 0;
+  border-radius: 8px;
+  background: var(--button);
+  color: var(--button-text);
+  cursor: pointer;
+  box-shadow: none;
+  transition:
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.bottomCreateCanvas:hover {
+  transform: translateX(-50%) translateY(-6px) scale(1.04);
+}
+
+.bottomCreateCanvas::before {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0);
+  content: "";
+  transition: background-color 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.bottomCreateCanvas:hover::before {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.bottomCreateIcon {
+  position: relative;
+  z-index: 1;
+  width: 31px;
+  height: 31px;
+}
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.createCanvasDialog {
+  width: min(540px, calc(100vw - 40px));
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  box-shadow: none;
+  padding: 30px 32px 32px;
+}
+
+.dialogTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.dialogTitleRow h2 {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 25px;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.dialogClose,
+.closeButton {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+
+.dialogClose:hover,
+.closeButton:hover {
+  background: var(--muted-panel);
+  color: var(--text);
+}
+
+.dialogClose span,
+.closeButton span {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.dialogClose span::before,
+.dialogClose span::after,
+.closeButton span::before,
+.closeButton span::after {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 16px;
+  height: 1.5px;
+  border-radius: 999px;
+  background: currentColor;
+  content: "";
+  transform-origin: center;
+}
+
+.dialogClose span::before,
+.closeButton span::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.dialogClose span::after,
+.closeButton span::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.dialogShapeClose {
+  border: 2px solid var(--accent);
+  border-radius: 0;
+  background: transparent;
+  transition:
+    border-radius 200ms var(--ease-out),
+    background-color 200ms ease,
+    transform 200ms var(--ease-out),
+    color 180ms ease;
+}
+
+.dialogShapeClose:hover {
+  background: var(--muted-panel);
+}
+
+.dialogShapeClose:active,
+.dialogClosing {
+  border-radius: 6px;
+  transform: scale(0.95);
+}
+
+.dialogInput {
+  width: 100%;
+  height: 50px;
+  border: 1px solid color-mix(in srgb, var(--muted) 62%, var(--line));
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  outline: none;
+  padding: 0 16px;
+}
+
+.dialogInput:focus {
+  border-color: var(--text);
+}
+
+.dialogInput::placeholder {
+  color: var(--muted);
+}
+
+.dialogLabel {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 650;
+  text-transform: uppercase;
+}
+
+.dialogDivider {
+  height: 1px;
+  margin: 26px 0 24px;
+  background: var(--line);
+}
+
+.dialogSubmit {
+  width: 100%;
+  height: 48px;
+  border: 0;
+  border-radius: 3px;
+  background: var(--button);
+  color: var(--button-text);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.dialogSubmit:disabled {
+  background: var(--muted-panel);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.dialogSubmit:not(:disabled):hover {
+  background: color-mix(in srgb, var(--button) 90%, var(--panel));
+}
+
+.dialogBody {
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.dialogActionRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.dialogSecondarySubmit,
+.dialogDangerSubmit {
+  height: 44px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 0 28px;
+}
+
+.dialogSecondarySubmit {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+}
+
+.dialogSecondarySubmit:hover {
+  background: var(--muted-panel);
+}
+
+.dialogDangerSubmit {
+  border: 0;
+  background: #ff4545;
+  color: #ffffff;
+  font-weight: 650;
+}
+
+.dialogDangerSubmit:hover {
+  background: #ef3333;
+}
+
+.workspace {
+  position: relative;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.workspaceTopbar {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 45;
+  display: flex;
+  height: 76px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  border-bottom: 1px solid var(--canvas-glass-border);
+  background: var(--canvas-glass-bg);
+  box-shadow: none;
+  backdrop-filter: blur(18px) saturate(125%);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
+  padding: 0 24px;
+}
+
+.workspaceTitle {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.workspaceTitle h2 {
+  overflow: hidden;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 20px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.secondaryButton,
+.toolButton {
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 650;
+  padding: 0 16px;
+}
+
+.secondaryButton:hover,
+.toolButton:hover {
+  background: var(--muted-panel);
+}
+
+.toolButton {
+  padding: 0 16px;
+  background: var(--panel);
+}
+
+.saveState {
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.saveStateSaving {
+  color: var(--muted);
+}
+
+.canvasArea {
+  --grid-size: 48px;
+  --grid-x: 0px;
+  --grid-y: 0px;
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  padding: 0;
+  background:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px),
+    var(--bg);
+  background-position: var(--grid-x) var(--grid-y);
+  background-size: var(--grid-size) var(--grid-size);
+}
+
+.canvasAreaPanning,
+.canvasAreaPanning * {
+  cursor: grabbing !important;
+}
+
+.canvasWorld {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 8000px;
+  height: 5000px;
+  transform-origin: 0 0;
+}
+
+.bottomToolbar {
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  z-index: 30;
+  display: flex;
+  gap: 8px;
+  transform: translateX(-50%);
+  border: 1px solid var(--canvas-glass-border);
+  border-radius: 6px;
+  background: var(--canvas-glass-bg);
+  padding: 8px;
+  box-shadow: none;
+  backdrop-filter: blur(18px) saturate(125%);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
+}
+
+.toolButton:disabled {
+  cursor: not-allowed;
+  background: color-mix(in srgb, var(--muted-panel) 78%, var(--panel));
+  color: var(--muted);
+  opacity: 1;
+}
+
+.importDock {
+  --folder-panel-width: 440px;
+  --website-panel-width: 660px;
+  position: absolute;
+  left: 24px;
+  top: 96px;
+  z-index: 35;
+  display: flex;
+  width: var(--website-panel-width);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.panel {
+  border: 1px solid var(--canvas-glass-border);
+  border-radius: 6px;
+  background: var(--canvas-glass-bg);
+  box-shadow: none;
+  backdrop-filter: blur(18px) saturate(125%);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
+}
+
+.folderPanel {
+  display: flex;
+  flex-direction: column;
+  width: var(--folder-panel-width);
+  padding: 12px;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.panelKicker {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.searchWrap {
+  position: relative;
+  margin-bottom: 18px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  width: 17px;
+  height: 17px;
+  transform: translateY(-50%);
+  border: 1.7px solid var(--muted);
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.searchIcon::after {
+  position: absolute;
+  right: -5px;
+  bottom: -4px;
+  width: 7px;
+  height: 1.7px;
+  border-radius: 999px;
+  background: var(--muted);
+  content: "";
+  transform: rotate(45deg);
+  transform-origin: left center;
+}
+
+.searchField {
+  width: 100%;
+  height: 54px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--muted-panel);
+  color: var(--text);
+  font-size: 16px;
+  outline: none;
+  padding: 0 14px 0 46px;
+}
+
+.searchField::placeholder {
+  color: var(--muted);
+}
+
+.folderList {
+  display: flex;
+  max-height: 202px;
+  min-height: 0;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+
+.folderRow {
+  display: flex;
+  flex: 0 0 49px;
+  height: 49px;
+  align-items: center;
+  justify-content: space-between;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 16px;
+  padding: 0 12px;
+  text-align: left;
+}
+
+.folderRow:hover,
+.folderRowSelected {
+  background: var(--muted-panel);
+  color: var(--text);
+}
+
+.check {
+  color: var(--muted);
+  opacity: 0;
+}
+
+.folderRowSelected .check {
+  opacity: 1;
+}
+
+.websitePanel {
+  display: flex;
+  width: var(--website-panel-width);
+  flex-direction: column;
+  overflow: hidden;
+  padding: 16px;
+}
+
+.websitePanelTitle {
+  margin: 0 0 4px;
+  font-family: var(--mono);
+  font-size: 17px;
+  font-weight: 650;
+}
+
+.websitePanelSubtitle {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.websiteSearchWrap {
+  flex: 0 0 auto;
+  margin-bottom: 14px;
+}
+
+.websiteList {
+  display: grid;
+  max-height: 594px;
+  min-height: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 14px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.websiteCard {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  cursor: grab;
+  padding: 0;
+  text-align: left;
+}
+
+.websiteCard:hover {
+  background: transparent;
+}
+
+.websiteCard:focus,
+.websiteCard:focus-visible {
+  outline: none;
+}
+
+.sitePreview {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--muted-panel);
+  transition: border-color 160ms ease;
+}
+
+.websiteCard:hover .sitePreview {
+  border-color: var(--text);
+}
+
+.previewArt {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.websiteCardFooter {
+  margin-top: 9px;
+}
+
+.websiteCardUrl {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.websiteEmpty {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.contextMenu {
+  position: fixed;
+  z-index: 80;
+  min-width: 180px;
+  border: 1px solid var(--canvas-glass-border);
+  border-radius: 4px;
+  background: var(--canvas-glass-bg);
+  padding: 6px;
+  box-shadow: none;
+  backdrop-filter: blur(18px) saturate(125%);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
+}
+
+.contextMenu button {
+  width: 100%;
+  height: 38px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 0 12px;
+  text-align: left;
+}
+
+.contextMenu button:hover {
+  background: var(--canvas-glass-hover);
+}
+
+.node {
+  position: absolute;
+  isolation: isolate;
+  user-select: none;
+}
+
+.nodeSelected .frameMain,
+.nodeSelected .noteShell {
+  box-shadow: var(--shadow), 0 0 0 1px color-mix(in srgb, var(--accent) 76%, transparent);
+}
+
+.frameShell {
+  position: relative;
+  overflow: visible;
+}
+
+.frameMain {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.frameBar {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  height: 40px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel) 86%, var(--muted-panel));
+  cursor: grab;
+  padding: 0 8px 0 10px;
+}
+
+.frameSource {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  min-width: 0;
+  max-width: 42%;
+  overflow: hidden;
+  transform: translate(-50%, -50%);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.frameLeftActions,
+.frameActions {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+.refreshButton,
+.frameDeleteButton {
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+  font-family: var(--mono);
+}
+
+.refreshButton:disabled {
+  cursor: not-allowed;
+  border-color: var(--line);
+  color: var(--muted);
+  opacity: 0.42;
+}
+
+.refreshButton:hover,
+.frameDeleteButton:hover {
+  border-color: var(--text);
+}
+
+.frameDeleteButton {
+  position: relative;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.frameDeleteButton span,
+.frameDeleteButton span::after {
+  display: block;
+  width: 14px;
+  height: 1.5px;
+  border-radius: 999px;
+  background: currentColor;
+  content: "";
+}
+
+.frameDeleteButton span {
+  transform: rotate(45deg);
+}
+
+.frameDeleteButton span::after {
+  transform: rotate(90deg);
+}
+
+.statusPill {
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--panel);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 7px 7px 6px;
+  text-transform: uppercase;
+}
+
+.deviceTabs {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  padding: 2px;
+}
+
+.deviceTabs button {
+  height: 23px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 0 7px;
+  text-transform: capitalize;
+  transition: background 140ms ease, color 140ms ease, box-shadow 140ms ease;
+}
+
+.deviceTabs button:hover {
+  background: color-mix(in srgb, var(--muted-panel) 82%, var(--panel));
+  color: var(--text);
+}
+
+.deviceTabs .deviceActive {
+  background: var(--button);
+  color: var(--button-text);
+}
+
+.deviceTabs .deviceActive:hover {
+  background: var(--button);
+  color: var(--button-text);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.frameViewport {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  background: var(--muted-panel);
+}
+
+.frameViewport iframe {
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: white;
+}
+
+.frameViewportCanvas iframe {
+  pointer-events: none;
+}
+
+.screenshotFallback {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #fff;
+}
+
+.previewHitbox {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: default;
+}
+
+.previewHint {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  z-index: 3;
+  transform: translateX(-50%);
+  border-radius: 3px;
+  background: rgba(17, 24, 39, 0.74);
+  color: white;
+  font-family: var(--mono);
+  font-size: 11px;
+  opacity: 0;
+  padding: 7px 9px;
+  transition: opacity 160ms ease;
+}
+
+.frameMain:hover .previewHint {
+  opacity: 1;
+}
+
+.exitPreview {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 8px);
+  z-index: 7;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--button);
+  color: var(--button-text);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 650;
+  padding: 0 12px;
+}
+
+.resizeHandle {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  z-index: 9;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--panel);
+  cursor: nwse-resize;
+}
+
+.nodeActivationShield {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: default;
+}
+
+.nodeActivationShield:focus {
+  outline: none;
+}
+
+.noteShell {
+  position: relative;
+  z-index: 1;
+  min-width: 190px;
+  min-height: 120px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.noteHeader {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  height: 34px;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  background: var(--muted-panel);
+  color: var(--muted);
+  cursor: grab;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0 10px;
+  text-transform: uppercase;
+}
+
+.noteHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.noteCharCount {
+  white-space: nowrap;
+}
+
+.noteDeleteButton {
+  display: grid;
+  width: 23px;
+  height: 23px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.noteDeleteButton:hover {
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--text);
+}
+
+.noteDeleteButton span,
+.noteDeleteButton span::after {
+  display: block;
+  width: 12px;
+  height: 1.4px;
+  border-radius: 999px;
+  background: currentColor;
+  content: "";
+}
+
+.noteDeleteButton span {
+  transform: rotate(45deg);
+}
+
+.noteDeleteButton span::after {
+  transform: rotate(90deg);
+}
+
+.noteEditor {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: calc(100% - 34px);
+  min-height: 86px;
+  resize: none;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.55;
+  padding: 12px;
+}
+
+.toast {
+  position: absolute;
+  right: 24px;
+  bottom: 26px;
+  z-index: 70;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 12px 14px;
+  box-shadow: var(--shadow);
+}
+
+.softScrollbar {
+  scrollbar-width: auto;
+  scrollbar-color: auto;
+}
+
+.softScrollbar::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+  background: #f5f5f5;
+}
+
+.softScrollbar::-webkit-scrollbar-track {
+  border-radius: 0;
+  background: #f5f5f5;
+}
+
+.softScrollbar::-webkit-scrollbar-thumb {
+  min-height: 64px;
+  border: 0;
+  border-radius: 0;
+  background: #dedede;
+}
+
+.softScrollbar::-webkit-scrollbar-thumb:hover {
+  background: #d2d2d2;
+}
+
+.softScrollbar::-webkit-scrollbar-button,
+.softScrollbar::-webkit-scrollbar-button:vertical:start:decrement,
+.softScrollbar::-webkit-scrollbar-button:vertical:end:increment,
+.softScrollbar::-webkit-scrollbar-button:vertical:start:increment,
+.softScrollbar::-webkit-scrollbar-button:vertical:end:decrement {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+.softScrollbar::-webkit-scrollbar-corner {
+  background: #f5f5f5;
+}
+
+@media (max-width: 920px) {
+  .importDock {
+    --folder-panel-width: min(392px, calc(100vw - 32px));
+    --website-panel-width: min(392px, calc(100vw - 32px));
+    right: 16px;
+  }
+
+  .folderPanel,
+  .websitePanel {
+    width: min(392px, calc(100vw - 32px));
+  }
+
+  .canvasGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .canvasCard,
+  .canvasCardShell {
+    width: 100%;
+    max-width: 453px;
+  }
+}

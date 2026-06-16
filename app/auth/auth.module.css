@@ -1,0 +1,182 @@
+.page {
+  min-height: 100dvh;
+  background: #f7f7f8;
+  color: #151820;
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+}
+
+.shell {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 48px 24px;
+}
+
+.form {
+  --auth-scale: 0.75;
+  width: min(100%, 674px);
+  transform: scale(var(--auth-scale));
+  transform-origin: center;
+}
+
+.fieldGrid {
+  display: grid;
+  gap: 28px;
+}
+
+.nameRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+.field,
+.passwordField {
+  width: 100%;
+  height: 54px;
+  border: 0;
+  border-radius: 0;
+  background: #ffffff;
+  color: #151820;
+  font-size: 22px;
+  outline: none;
+  padding: 0 14px;
+}
+
+.field::placeholder,
+.passwordField::placeholder {
+  color: #80868f;
+}
+
+.passwordWrap {
+  position: relative;
+}
+
+.passwordField {
+  padding-right: 52px;
+}
+
+.eyeButton {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  display: grid;
+  width: 30px;
+  height: 30px;
+  transform: translateY(-50%);
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #777e88;
+  cursor: pointer;
+}
+
+.actions {
+  display: grid;
+  justify-items: end;
+  gap: 52px;
+  margin-top: 80px;
+}
+
+.submit {
+  min-width: 132px;
+  height: 45px;
+  border: 0;
+  border-radius: 0;
+  background: #1d1d1f;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 21px;
+  font-weight: 700;
+  padding: 0 24px;
+}
+
+.submit:disabled {
+  background: #d4d6da;
+  color: #7a8089;
+  cursor: not-allowed;
+}
+
+.switchText {
+  justify-self: center;
+  color: #666d76;
+  font-size: 16px;
+}
+
+.switchButton {
+  border: 0;
+  background: transparent;
+  color: #151820;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 0;
+}
+
+.error {
+  margin-top: 20px;
+  color: #c73737;
+  font-size: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .page {
+    background: #000000;
+    color: #f4f4f5;
+  }
+
+  .field,
+  .passwordField {
+    background: #1a1a1a;
+    color: #f4f4f5;
+  }
+
+  .field::placeholder,
+  .passwordField::placeholder {
+    color: #9b9b9f;
+  }
+
+  .submit {
+    background: #1b1b1b;
+    color: #ffffff;
+  }
+
+  .submit:disabled {
+    background: #2c2c2e;
+    color: #737373;
+  }
+
+  .switchText {
+    color: #dddddf;
+  }
+
+  .switchButton {
+    color: #ffffff;
+  }
+}
+
+@media (max-width: 720px) {
+  .form {
+    --auth-scale: 1;
+    width: min(100%, 420px);
+  }
+
+  .nameRow {
+    grid-template-columns: 1fr;
+  }
+
+  .fieldGrid {
+    gap: 18px;
+  }
+
+  .field,
+  .passwordField {
+    height: 54px;
+    font-size: 18px;
+  }
+
+  .actions {
+    gap: 36px;
+    margin-top: 56px;
+  }
+}

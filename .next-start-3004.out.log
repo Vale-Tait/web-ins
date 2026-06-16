@@ -1,0 +1,8 @@
+
+> website-inspiration-manager@1.0.0 start
+> next start --port 3004
+
+▲ Next.js 16.2.7
+- Local:         http://localhost:3004
+- Network:       http://10.76.215.96:3004
+✓ Ready in 140ms
