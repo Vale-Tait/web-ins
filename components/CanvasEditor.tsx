@@ -10,6 +10,8 @@ type FlowData = {
   label: string;
   kind: CanvasNodeData["type"];
   domain?: string;
+  url?: string;
+  screenshotUrl?: string | null;
 };
 
 export function CanvasEditor({
@@ -34,7 +36,9 @@ export function CanvasEditor({
           data: {
             kind: node.type,
             label: node.type === "website" ? link?.domain ?? node.content : node.content,
-            domain: link?.domain
+            domain: link?.domain,
+            url: link?.url,
+            screenshotUrl: link?.screenshotUrl
           },
           type: "inspiration",
           style: {
@@ -71,7 +75,7 @@ function InspirationNode({ data }: NodeProps<Node<FlowData>>) {
     return (
       <div className="overflow-hidden rounded-lg border border-[var(--line)] bg-[var(--panel)] shadow-[var(--shadow)]">
         <div className="h-36 border-b border-[var(--line)]">
-          <PreviewArt domain={data.domain ?? data.label} />
+          <PreviewArt domain={data.domain ?? data.label} url={data.url} screenshotUrl={data.screenshotUrl} />
         </div>
         <div className="mono px-4 py-3 text-sm font-semibold">{data.label}</div>
       </div>

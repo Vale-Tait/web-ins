@@ -32,12 +32,14 @@ export function CanvasWorkspaceShell({
   canvasId,
   data,
   onDataChange,
+  onPersistCanvas,
   onBack,
   rootClassName = ""
 }: {
   canvasId: string;
   data: AppData;
   onDataChange: (data: AppData) => void;
+  onPersistCanvas?: (canvas: InspirationCanvas) => Promise<void> | void;
   onBack?: () => void;
   rootClassName?: string;
 }) {
@@ -61,7 +63,8 @@ export function CanvasWorkspaceShell({
   const { canvas, commit, pushHistory, replaceCanvasWithoutHistory, undo, redo, canUndo, canRedo, saveState } = useCanvasWorkspace({
     data,
     canvasId,
-    onDataChange
+    onDataChange,
+    onPersistCanvas
   });
   const [pan, setPanState] = useState(canvas?.viewport.pan ?? { x: 220, y: 120 });
   const [zoom, setZoomState] = useState(canvas?.viewport.zoom ?? defaultCanvasViewport.zoom);

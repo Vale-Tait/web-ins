@@ -1,16 +1,15 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useReducer } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from "react";
 import {
   createCanvas,
   createCanvasNode,
   createFolder,
   createLink,
-  loadData,
   loadTheme,
-  saveData,
   saveTheme
 } from "@/lib/demo-store";
+import { upsertLinkInList } from "@/lib/link-dedupe";
 import type { AppData, CanvasNodeData, DeviceView, InspirationCanvas, LinkItem, ThemeName } from "@/lib/types";
 
 type State = AppData & {
@@ -25,7 +24,7 @@ type Action =
   | { type: "add-folder"; name: string }
   | { type: "add-folder-to-link"; name: string; linkId: string }
   | { type: "update-folder"; id: string; name: string; description?: string | null }
-  | { type: "add-link"; url: string; folderIds: string[]; tags: string[]; note: string; includeAnalysis?: boolean }
+  | { type: "add-link"; url: string; folderIds: string[]; tags: string[]; note: string; includeAnalysis?: boolean; analysis?: Partial<LinkItem["analysis"]> }
   | { type: "delete-link"; id: string; folderId?: string }
   | { type: "update-link"; id: string; patch: Partial<LinkItem> }
   | { type: "add-canvas"; name: string }
@@ -44,6 +43,25 @@ const initialState: State = {
   theme: "light",
   hydrated: false
 };
+
+type ApiEnvelope<T> = { data: T } | { error: string };
+
+async function apiRequest<T>(url: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(url, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...init?.headers
+    }
+  });
+  const payload = (await response.json()) as ApiEnvelope<T>;
+  if (!response.ok || "error" in payload) throw new Error("error" in payload ? payload.error : "Request failed");
+  return payload.data;
+}
+
+async function loadRemoteData(): Promise<AppData> {
+  return apiRequest<AppData>("/api/app-data");
+}
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -77,7 +95,7 @@ function reducer(state: State, action: Action): State {
     case "add-link":
       return {
         ...state,
-        links: [createLink(action.url, action.folderIds, action.tags, action.note, action.includeAnalysis ?? true), ...state.links]
+        links: [createLink(action.url, action.folderIds, action.tags, action.note, action.includeAnalysis ?? true, action.analysis), ...state.links]
       };
     case "delete-link":
       if (!action.folderId || action.folderId === "all") {
@@ -176,17 +194,32 @@ type AppContextValue = State & {
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, baseDispatch] = useReducer(reducer, initialState);
+  const stateRef = useRef(state);
 
   useEffect(() => {
-    dispatch({ type: "hydrate", data: loadData(), theme: loadTheme() });
+    stateRef.current = state;
+  }, [state]);
+
+  useEffect(() => {
+    let active = true;
+    loadRemoteData()
+      .then((data) => {
+        if (active) baseDispatch({ type: "hydrate", data, theme: loadTheme() });
+      })
+      .catch((error) => {
+        console.error(error);
+        if (active) baseDispatch({ type: "hydrate", data: { folders: [], links: [], canvases: [] }, theme: loadTheme() });
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
     if (!state.hydrated) return;
-    saveData({ folders: state.folders, links: state.links, canvases: state.canvases });
     saveTheme(state.theme);
-  }, [state]);
+  }, [state.hydrated, state.theme]);
 
   useEffect(() => {
     if (!state.hydrated) return;
@@ -203,6 +236,128 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => media.removeEventListener("change", applyTheme);
   }, [state.hydrated, state.theme]);
 
+  const dispatch = useCallback((action: Action) => {
+    const currentData = () => {
+      const current = stateRef.current;
+      return { folders: current.folders, links: current.links, canvases: current.canvases };
+    };
+
+    const replaceData = (data: AppData) => baseDispatch({ type: "replace-data", data });
+
+    switch (action.type) {
+      case "set-theme":
+      case "replace-data":
+      case "update-canvas":
+      case "add-canvas-node":
+      case "update-canvas-node":
+      case "delete-canvas-node":
+      case "set-node-device":
+        baseDispatch(action);
+        return;
+      case "hydrate":
+        baseDispatch(action);
+        return;
+      case "add-folder":
+        apiRequest<AppData["folders"][number]>("/api/folders", { method: "POST", body: JSON.stringify({ name: action.name }) })
+          .then((folder) => {
+            const data = currentData();
+            replaceData({ ...data, folders: [...data.folders, folder] });
+          })
+          .catch(console.error);
+        return;
+      case "update-folder":
+        apiRequest<AppData["folders"][number]>(`/api/folders/${action.id}`, {
+          method: "PATCH",
+          body: JSON.stringify({ name: action.name, description: action.description ?? null })
+        })
+          .then((folder) => {
+            const data = currentData();
+            replaceData({ ...data, folders: data.folders.map((item) => (item.id === folder.id ? folder : item)) });
+          })
+          .catch(console.error);
+        return;
+      case "add-folder-to-link":
+        apiRequest<AppData["folders"][number]>("/api/folders", { method: "POST", body: JSON.stringify({ name: action.name }) })
+          .then((folder) => {
+            const data = currentData();
+            const link = data.links.find((item) => item.id === action.linkId);
+            if (!link) return null;
+            return apiRequest<LinkItem>(`/api/links/${action.linkId}`, {
+              method: "PATCH",
+              body: JSON.stringify({ folderIds: [...link.folderIds, folder.id] })
+            }).then((updatedLink) => ({ folder, updatedLink }));
+          })
+          .then((result) => {
+            if (!result) return;
+            const data = currentData();
+            replaceData({
+              ...data,
+              folders: [...data.folders, result.folder],
+              links: data.links.map((item) => (item.id === result.updatedLink.id ? result.updatedLink : item))
+            });
+          })
+          .catch(console.error);
+        return;
+      case "add-link":
+        apiRequest<LinkItem>("/api/links", {
+          method: "POST",
+          body: JSON.stringify({
+            url: action.url,
+            folderIds: action.folderIds,
+            tags: action.tags,
+            note: action.note,
+            includeAnalysis: action.includeAnalysis ?? true,
+            analysis: action.analysis
+          })
+        })
+          .then((link) => {
+            const data = currentData();
+            replaceData({ ...data, links: upsertLinkInList(data.links, link) });
+          })
+          .catch(console.error);
+        return;
+      case "update-link":
+        {
+          const previousLink = stateRef.current.links.find((item) => item.id === action.id);
+          baseDispatch(action);
+          apiRequest<LinkItem>(`/api/links/${action.id}`, { method: "PATCH", body: JSON.stringify(action.patch) })
+            .then((link) => {
+              const data = currentData();
+              replaceData({ ...data, links: data.links.map((item) => (item.id === link.id ? link : item)) });
+            })
+            .catch((error) => {
+              console.error(error);
+              if (!previousLink) return;
+              const data = currentData();
+              replaceData({ ...data, links: data.links.map((item) => (item.id === previousLink.id ? previousLink : item)) });
+            });
+        }
+        return;
+      case "delete-link":
+        apiRequest<LinkItem | { id: string; deleted: true }>(
+          `/api/links/${action.id}${action.folderId ? `?folderId=${encodeURIComponent(action.folderId)}` : ""}`,
+          { method: "DELETE" }
+        )
+          .then((result) => {
+            const data = currentData();
+            if ("deleted" in result) {
+              replaceData({ ...data, links: data.links.filter((item) => item.id !== result.id) });
+              return;
+            }
+            replaceData({ ...data, links: data.links.map((item) => (item.id === result.id ? result : item)) });
+          })
+          .catch(console.error);
+        return;
+      case "add-canvas":
+      case "rename-canvas":
+      case "delete-canvas":
+        baseDispatch(action);
+        return;
+      default:
+        baseDispatch(action);
+    }
+  }, []);
+
   const value = useMemo<AppContextValue>(
     () => ({
       ...state,
@@ -211,7 +366,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       findLink: (id) => state.links.find((link) => link.id === id),
       findCanvas: (id) => state.canvases.find((canvas) => canvas.id === id)
     }),
-    [state]
+    [dispatch, state]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

@@ -209,7 +209,14 @@ export function createFolder(name: string): Folder {
   };
 }
 
-export function createLink(urlInput: string, folderIds: string[], tagsInput: string[], note = "", includeAnalysis = true): LinkItem {
+export function createLink(
+  urlInput: string,
+  folderIds: string[],
+  tagsInput: string[],
+  note = "",
+  includeAnalysis = true,
+  analysis?: Partial<LinkItem["analysis"]>
+): LinkItem {
   const url = normalizeUrl(urlInput);
   const domain = getDomain(url);
   const id = `link-${crypto.randomUUID()}`;
@@ -220,13 +227,24 @@ export function createLink(urlInput: string, folderIds: string[], tagsInput: str
     domain,
     title: domain,
     description: `Saved reference from ${domain}`,
-    screenshotUrl: createScreenshotPlaceholder(domain),
+    screenshotUrl: createScreenshotPlaceholder(url),
     note,
     status: "ready",
     folderIds: folderIds.length ? folderIds : ["unsorted"],
     tags: tagsInput.map((tag) => tag.trim()).filter(Boolean),
     analysis: includeAnalysis
-      ? createAnalysisFixture(url, id)
+      ? analysis
+        ? {
+            id: `analysis-${id}`,
+            linkId: id,
+            fonts: analysis.fonts ?? [],
+            animations: analysis.animations ?? [],
+            techStack: analysis.techStack ?? [],
+            colors: analysis.colors ?? [],
+            createdAt: analysis.createdAt ?? now,
+            updatedAt: now
+          }
+        : createAnalysisFixture(url, id)
       : {
           id: `analysis-${id}`,
           linkId: id,

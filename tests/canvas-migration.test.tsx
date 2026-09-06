@@ -312,14 +312,18 @@ describe("canvas migration", () => {
   it("uses the exact product top navigation component on the canvas list page", () => {
     const css = readFileSync(join(process.cwd(), "components/canvas/canvas.module.css"), "utf8");
     const page = readFileSync(join(process.cwd(), "app/canvas/page.tsx"), "utf8");
+    const routeShell = readFileSync(join(process.cwd(), "components/AppRouteShell.tsx"), "utf8");
     const productShell = readFileSync(join(process.cwd(), "components/ProductShell.tsx"), "utf8");
     const productTopNav = readFileSync(join(process.cwd(), "components/ProductTopNav.tsx"), "utf8");
     const canvasTopNav = readFileSync(join(process.cwd(), "components/canvas/CanvasTopNav.tsx"), "utf8");
     const scaleRootBlock = css.match(/\.canvasListScaleRoot\s*\{(?<body>[^}]+)\}/)?.groups?.body ?? "";
     const scrollRootBlock = css.match(/\.canvasListScrollRoot\s*\{(?<body>[^}]+)\}/)?.groups?.body ?? "";
 
-    expect(page).toContain('import { ProductShell } from "@/components/ProductShell"');
-    expect(page).toContain("<ProductShell>");
+    expect(routeShell).toContain('import { ProductChrome } from "@/components/ProductShell"');
+    expect(routeShell).toContain("<ProductChrome>");
+    expect(routeShell).toContain("isCanvasWorkspacePath");
+    expect(page).not.toContain('import { ProductShell } from "@/components/ProductShell"');
+    expect(page).not.toContain("<ProductShell>");
     expect(page).not.toContain("app-scale-root");
     expect(page).not.toContain("canvasListScaleRoot");
     expect(page).not.toContain("canvasListScrollRoot");

@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type CSSProperties } from "react";
+import { memo, useState, type CSSProperties } from "react";
 import { EditFolderDialog } from "@/components/EditFolderDialog";
+import { ScreenshotPreview } from "@/components/ScreenshotPreview";
 import type { Folder, LinkItem } from "@/lib/types";
 
 const basePreviewStyle: CSSProperties = {
@@ -57,53 +58,16 @@ const previewLayouts: Record<1 | 2 | 3, CSSProperties[]> = {
   ],
 };
 
-function svgDataUrl(svg: string) {
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-}
-
-function getFolderPreviewSrc(link: LinkItem) {
-  if (link.domain.includes("makemepulse")) {
-    return svgDataUrl(`
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760">
-        <rect width="1200" height="760" fill="#111111"/>
-        <text x="92" y="92" fill="#8fa3b8" font-family="Arial, sans-serif" font-size="24">makemepulse.</text>
-        <text x="310" y="260" fill="#f8f8f8" font-family="Arial, sans-serif" font-size="118" font-weight="300">global</text>
-        <text x="455" y="395" fill="#f8f8f8" font-family="Arial, sans-serif" font-size="118" font-weight="300">creative</text>
-        <rect x="280" y="500" width="785" height="260" fill="#a9a597"/>
-        <text x="880" y="690" fill="#ffffff" font-family="Arial, sans-serif" font-size="122" font-weight="700">studio.</text>
-      </svg>
-    `);
-  }
-
-  if (link.domain.includes("isadeburgh")) {
-    return svgDataUrl(`
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760">
-        <rect width="1200" height="760" fill="#ffffff"/>
-        <text x="82" y="150" fill="#050505" font-family="Arial, sans-serif" font-size="92" font-weight="900">ISA DE BURGH</text>
-        <text x="86" y="365" fill="#1d2740" font-family="Georgia, serif" font-size="50">Brand Architecture</text>
-        <text x="86" y="425" fill="#1d2740" font-family="Georgia, serif" font-size="50">Creative Content</text>
-        <text x="86" y="485" fill="#1d2740" font-family="Georgia, serif" font-size="50">Storytelling</text>
-        <text x="86" y="545" fill="#1d2740" font-family="Georgia, serif" font-size="50">Art Direction</text>
-        <rect x="690" y="230" width="430" height="530" fill="#efefef"/>
-        <circle cx="905" cy="500" r="210" fill="#cfcfcf" opacity=".65"/>
-      </svg>
-    `);
-  }
-
-  return link.screenshotUrl;
-}
-
 function FolderPreviewCard({ link, style }: { link: LinkItem; style: CSSProperties }) {
   return (
     <div className="absolute bg-card border border-border rounded-none shadow-md" style={style}>
-      <img className="w-full h-full object-cover border-b border-border/30" alt="" src={getFolderPreviewSrc(link)} />
+      <ScreenshotPreview link={link} sizes="138px" className="object-cover border-b border-border/30" alt="" />
     </div>
   );
 }
 
-export function FolderCard({ folder, links }: { folder: Folder; links: LinkItem[] }) {
+export const FolderCard = memo(function FolderCard({ folder, folderLinks }: { folder: Folder; folderLinks: LinkItem[] }) {
   const [editing, setEditing] = useState(false);
-  const folderLinks = folder.id === "all" ? links : links.filter((link) => link.folderIds.includes(folder.id));
   const count = folderLinks.length;
   const previews = folderLinks.slice(0, 3);
   const previewStyles = previews.length > 0 ? previewLayouts[Math.min(previews.length, 3) as 1 | 2 | 3] : [];
@@ -196,4 +160,4 @@ export function FolderCard({ folder, links }: { folder: Folder; links: LinkItem[
       </div>
     </div>
   );
-}
+});

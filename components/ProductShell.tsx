@@ -8,7 +8,7 @@ import { ProductTopNav } from "@/components/ProductTopNav";
 import { ThemeRail } from "@/components/ThemeRail";
 import { useState } from "react";
 
-function ShellInner({ children }: { children: React.ReactNode }) {
+export function ProductChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [folderCreateOpen, setFolderCreateOpen] = useState(false);
 
@@ -60,7 +60,7 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
   return (
     <AuthGate>
       <AppProvider>
-        <ShellInner>{children}</ShellInner>
+        <ProductChrome>{children}</ProductChrome>
       </AppProvider>
     </AuthGate>
   );

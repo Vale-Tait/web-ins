@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { ArrowSquareOut, BookmarkSimple, CaretDown, Check, MagnifyingGlass, Plus } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
-import { ProductShell } from "@/components/ProductShell";
 import { PreviewArt } from "@/components/PreviewArt";
 import { useApp } from "@/components/AppProvider";
 import type { Folder, LinkItem } from "@/lib/types";
@@ -41,7 +40,7 @@ function LinkDetailContent() {
       <section className="grid min-h-[calc(100dvh-151px)] grid-cols-1 lg:h-[calc(100dvh-151px)] lg:overflow-hidden lg:grid-cols-[58%_42%]">
         <div className="border-r border-[var(--line)] px-7 py-10 md:px-10">
           <div className="aspect-[16/9] overflow-hidden rounded-md border border-[var(--line)]">
-            <PreviewArt domain={link.domain} dark />
+            <PreviewArt domain={link.domain} url={link.url} screenshotUrl={link.screenshotUrl} dark />
           </div>
         </div>
         <aside className="px-7 py-16 md:px-12">
@@ -375,9 +374,5 @@ function FolderNoteEditor({ folderName }: { folderName: string }) {
 }
 
 export default function LinkDetailPage() {
-  return (
-    <ProductShell>
-      <LinkDetailContent />
-    </ProductShell>
-  );
+  return <LinkDetailContent />;
 }

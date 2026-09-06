@@ -1,34 +1,26 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { MagnifyingGlass, X } from "@phosphor-icons/react";
+import { useState } from "react";
+import { X } from "@phosphor-icons/react";
 import { useApp } from "@/components/AppProvider";
+import { FolderMultiSelect } from "@/components/FolderMultiSelect";
 
 export function SaveUrlDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { folders, dispatch } = useApp();
   const [url, setUrl] = useState("");
-  const [folderQuery, setFolderQuery] = useState("");
   const [selected, setSelected] = useState<string[]>(["unsorted"]);
   const [includeAnalysis, setIncludeAnalysis] = useState(true);
 
-  const visibleFolders = useMemo(
-    () => folders.filter((folder) => folder.name.toLowerCase().includes(folderQuery.toLowerCase())),
-    [folderQuery, folders]
-  );
   const canSave = url.trim().length > 0;
 
   if (!open) return null;
-
-  function toggleFolder(id: string) {
-    setSelected((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]));
-  }
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     dispatch({
       type: "add-link",
       url,
-      folderIds: selected,
+      folderIds: selected.length ? selected : ["unsorted"],
       tags: [],
       note: "",
       includeAnalysis
@@ -60,30 +52,7 @@ export function SaveUrlDialog({ open, onClose }: { open: boolean; onClose: () =>
           className="dialog-field mb-9 mt-3 h-[54px] w-full rounded-none px-5 text-lg outline-none"
         />
         <label className="dialog-label-muted mono mb-4 block text-lg uppercase">SAVE TO FOLDER(S):</label>
-        <div className="dialog-field mb-6 rounded-none">
-          <div className="flex h-[54px] items-center gap-3 border-b border-[var(--line)] px-5">
-            <MagnifyingGlass size={27} className="text-[var(--muted)]" />
-            <input
-              value={folderQuery}
-              onChange={(event) => setFolderQuery(event.target.value)}
-              placeholder="Search folders..."
-              className="h-full flex-1 border-0 bg-transparent text-lg text-[var(--text)] outline-none placeholder:text-[var(--muted)]"
-            />
-          </div>
-          <div className="soft-scrollbar h-[150px] overflow-auto p-2">
-            {visibleFolders.map((folder) => (
-              <label key={folder.id} className="flex h-12 cursor-pointer items-center gap-3 rounded-[3px] px-3 text-lg hover:bg-[var(--muted-panel)]">
-                <input
-                  type="checkbox"
-                  checked={selected.includes(folder.id)}
-                  onChange={() => toggleFolder(folder.id)}
-                  className="h-6 w-6 rounded border-[var(--line)] accent-[var(--button)]"
-                />
-                {folder.name}
-              </label>
-            ))}
-          </div>
-        </div>
+        <FolderMultiSelect folders={folders} value={selected} onChange={setSelected} className="mb-6" />
         <label className="mono mb-8 flex cursor-pointer items-center gap-3 text-lg text-[var(--text)]">
           <input
             type="checkbox"

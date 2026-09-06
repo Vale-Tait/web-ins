@@ -187,7 +187,7 @@ const linksBase = [
 
 export const seedLinks: LinkItem[] = linksBase.map((item) => ({
   ...item,
-  screenshotUrl: createScreenshotPlaceholder(item.domain),
+  screenshotUrl: createScreenshotPlaceholder(item.url),
   status: "ready",
   analysis: createAnalysisFixture(item.url, item.id),
   createdAt: now,

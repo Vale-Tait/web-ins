@@ -3,7 +3,7 @@
 import { Eye, EyeSlash } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getAuthSession, saveAuthSession } from "@/lib/auth-store";
+import { getAuthSession, signInWithPassword, signUpWithPassword } from "@/lib/auth-store";
 import styles from "@/app/auth/auth.module.css";
 
 export default function AuthPage() {
@@ -17,9 +17,16 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (getAuthSession()) router.replace("/collections");
+    let active = true;
+    getAuthSession().then((session) => {
+      if (active && session) router.replace("/collections");
+    });
+    return () => {
+      active = false;
+    };
   }, [router]);
 
   const isSignup = mode === "signup";
@@ -27,19 +34,27 @@ export default function AuthPage() {
     ? email.trim().length > 0 && firstName.trim().length > 0 && lastName.trim().length > 0 && password.length >= 6 && password === confirmPassword
     : email.trim().length > 0 && password.length > 0;
 
-  function submit(event: React.FormEvent<HTMLFormElement>) {
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canSubmit) {
       setError(isSignup ? "Complete all fields and confirm the password." : "Enter email and password.");
       return;
     }
 
-    saveAuthSession({
-      email,
-      firstName: isSignup ? firstName : email.split("@")[0] || "User",
-      lastName: isSignup ? lastName : "Account"
-    });
-    router.replace("/collections");
+    setSubmitting(true);
+    setError("");
+    try {
+      if (isSignup) {
+        await signUpWithPassword({ email, firstName, lastName, password });
+      } else {
+        await signInWithPassword(email, password);
+      }
+      router.replace("/collections");
+    } catch (authError) {
+      setError(authError instanceof Error ? authError.message : "Unable to authenticate.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   function switchMode() {
@@ -97,7 +112,7 @@ export default function AuthPage() {
           </div>
           {error ? <p className={styles.error}>{error}</p> : null}
           <div className={styles.actions}>
-            <button className={styles.submit} type="submit" disabled={!canSubmit}>
+            <button className={styles.submit} type="submit" disabled={!canSubmit || submitting}>
               {isSignup ? "Sign up" : "Log in"}
             </button>
             <p className={styles.switchText}>

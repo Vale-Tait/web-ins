@@ -14,11 +14,17 @@ import type { AppData, InspirationCanvas } from "@/lib/types";
 export function CanvasListShell({
   data,
   onDataChange,
-  onOpenCanvas
+  onOpenCanvas,
+  onCreateCanvas,
+  onRenameCanvas,
+  onDeleteCanvas
 }: {
   data: AppData;
   onDataChange: (data: AppData) => void;
   onOpenCanvas?: (canvasId: string) => void;
+  onCreateCanvas?: (name: string) => Promise<InspirationCanvas>;
+  onRenameCanvas?: (canvasId: string, name: string) => Promise<InspirationCanvas>;
+  onDeleteCanvas?: (canvasId: string) => Promise<void>;
 }) {
   const [createOpen, setCreateOpen] = useState(false);
   const [menuCanvasId, setMenuCanvasId] = useState<string | null>(null);
@@ -34,7 +40,18 @@ export function CanvasListShell({
     return () => window.removeEventListener("pointerdown", close);
   }, [menuCanvasId]);
 
-  function createCanvas(name: string) {
+  async function createCanvas(name: string) {
+    if (onCreateCanvas) {
+      const canvas = await onCreateCanvas(name);
+      const draft = cloneData(data);
+      draft.canvases.unshift(canvas);
+      onDataChange(draft);
+      window.sessionStorage.setItem(`wim:canvas-open-import:${canvas.id}`, "1");
+      setCreateOpen(false);
+      onOpenCanvas?.(canvas.id);
+      return;
+    }
+
     const canvas = createCanvasRecord(name);
     const draft = cloneData(data);
     draft.canvases.unshift(canvas);
@@ -45,16 +62,34 @@ export function CanvasListShell({
     onOpenCanvas?.(canvas.id);
   }
 
-  function renameCurrentCanvas(name: string) {
+  async function renameCurrentCanvas(name: string) {
     if (!renameCanvas) return;
+    if (onRenameCanvas) {
+      const updated = await onRenameCanvas(renameCanvas.id, name);
+      const draft = cloneData(data);
+      draft.canvases = draft.canvases.map((canvas) => (canvas.id === updated.id ? updated : canvas));
+      onDataChange(draft);
+      setRenameCanvas(null);
+      return;
+    }
+
     const draft = cloneData(data);
     draft.canvases = draft.canvases.map((canvas) => (canvas.id === renameCanvas.id ? { ...canvas, name, updatedAt: new Date().toISOString() } : canvas));
     onDataChange(draft);
     setRenameCanvas(null);
   }
 
-  function deleteCurrentCanvas() {
+  async function deleteCurrentCanvas() {
     if (!deleteCanvas) return;
+    if (onDeleteCanvas) {
+      await onDeleteCanvas(deleteCanvas.id);
+      const draft = cloneData(data);
+      draft.canvases = draft.canvases.filter((canvas) => canvas.id !== deleteCanvas.id);
+      onDataChange(draft);
+      setDeleteCanvas(null);
+      return;
+    }
+
     const draft = cloneData(data);
     draft.canvases = draft.canvases.filter((canvas) => canvas.id !== deleteCanvas.id);
     onDataChange(draft);

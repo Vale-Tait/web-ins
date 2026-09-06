@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { clearAuthSession, getAuthSession, saveAuthSession } from "@/lib/auth-store";
+import { clearAuthSession, getAuthSession } from "@/lib/auth-store";
 
 const root = process.cwd();
 
@@ -25,17 +25,24 @@ describe("auth entry flow", () => {
     expect(authPage).toContain("Confirm password");
   });
 
-  it("protects product shells and canvas routes behind the auth gate", () => {
+  it("protects product routes through a persistent root route shell", () => {
+    const rootLayout = readFileSync(join(root, "app/layout.tsx"), "utf8");
+    const routeShellPath = join(root, "components/AppRouteShell.tsx");
+    expect(existsSync(routeShellPath)).toBe(true);
+    const routeShell = readFileSync(routeShellPath, "utf8");
     const productShell = readFileSync(join(root, "components/ProductShell.tsx"), "utf8");
     const canvasListPage = readFileSync(join(root, "app/canvas/page.tsx"), "utf8");
     const canvasEditorPage = readFileSync(join(root, "app/canvas/[id]/page.tsx"), "utf8");
 
+    expect(rootLayout).toContain("<AppRouteShell>");
+    expect(routeShell).toContain("<AuthGate fallback=");
+    expect(routeShell).toContain("<AppProvider>");
+    expect(routeShell).toContain("isCanvasWorkspacePath");
     expect(productShell).toContain('import { AuthGate } from "@/components/AuthGate"');
     expect(productShell).toContain("<AuthGate>");
-    expect(canvasListPage).toContain('import { ProductShell } from "@/components/ProductShell"');
-    expect(canvasListPage).toContain("<ProductShell>");
-    expect(canvasEditorPage).toContain('import { AuthGate } from "@/components/AuthGate"');
-    expect(canvasEditorPage).toContain("<AuthGate>");
+    expect(canvasListPage).not.toContain("<ProductShell>");
+    expect(canvasEditorPage).not.toContain("<AppProvider>");
+    expect(canvasEditorPage).not.toContain("<AuthGate>");
   });
 
   it("routes the User navigation item to the settings page", () => {
@@ -44,6 +51,24 @@ describe("auth entry flow", () => {
     expect(topNav).toContain('href="/settings"');
     expect(topNav).toContain('pathname.startsWith("/settings")');
     expect(topNav).not.toContain('href="/auth"');
+  });
+
+  it("checks the product auth gate once after entering the product area", () => {
+    const authGate = readFileSync(join(root, "components/AuthGate.tsx"), "utf8");
+
+    expect(authGate).toContain("initialPathnameRef");
+    expect(authGate).toContain("const requestedPathname = initialPathnameRef.current");
+    expect(authGate).toContain("}, [router]);");
+    expect(authGate).not.toContain("[pathname, router]");
+  });
+
+  it("hydrates product data through a single bootstrap request", () => {
+    const appProvider = readFileSync(join(root, "components/AppProvider.tsx"), "utf8");
+
+    expect(appProvider).toContain('apiRequest<AppData>("/api/app-data")');
+    expect(appProvider).not.toContain('apiRequest<AppData["folders"]>("/api/folders")');
+    expect(appProvider).not.toContain('apiRequest<AppData["links"]>("/api/links")');
+    expect(appProvider).not.toContain('apiRequest<AppData["canvases"]>("/api/canvases")');
   });
 
   it("keeps auth theme system-only while product pages keep the theme menu", () => {
@@ -88,13 +113,15 @@ describe("auth entry flow", () => {
     expect(settingsPage).not.toContain("Profile");
   });
 
-  it("stores and clears the local auth session", () => {
-    expect(getAuthSession()).toBeNull();
+  it("uses Supabase auth instead of a local auth session", async () => {
+    const authStore = readFileSync(join(root, "lib/auth-store.ts"), "utf8");
 
-    saveAuthSession({ email: "vale@example.com", firstName: "Vale", lastName: "User" });
-    expect(getAuthSession()).toEqual({ email: "vale@example.com", firstName: "Vale", lastName: "User" });
+    expect(await getAuthSession()).toBeNull();
+    await clearAuthSession();
 
-    clearAuthSession();
-    expect(getAuthSession()).toBeNull();
+    expect(authStore).toContain("supabase.auth.signUp");
+    expect(authStore).toContain("supabase.auth.signInWithPassword");
+    expect(authStore).toContain("supabase.auth.signOut");
+    expect(authStore).not.toContain("window.localStorage.setItem");
   });
 });

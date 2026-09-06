@@ -3,14 +3,30 @@
 import { Suspense } from "react";
 import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import { ProductShell } from "@/components/ProductShell";
 import { FolderCard } from "@/components/FolderCard";
 import { useApp } from "@/components/AppProvider";
+import { ProductLoadingInline } from "@/components/ProductLoading";
+import type { LinkItem } from "@/lib/types";
+
+const emptyLinks: LinkItem[] = [];
 
 function CollectionsContent() {
   const { folders, links } = useApp();
   const searchParams = useSearchParams();
   const search = searchParams.get("search")?.toLowerCase() ?? "";
+
+  const linksByFolder = useMemo(() => {
+    const grouped = new Map<string, LinkItem[]>();
+    for (const link of links) {
+      for (const id of new Set(link.folderIds)) {
+        const items = grouped.get(id);
+        if (items) items.push(link);
+        else grouped.set(id, [link]);
+      }
+    }
+    grouped.set("all", links);
+    return grouped;
+  }, [links]);
 
   const visibleFolders = useMemo(
     () => folders.filter((folder) => !search || folder.name.toLowerCase().includes(search)),
@@ -23,7 +39,7 @@ function CollectionsContent() {
         {search ? <p className="mono mb-4 px-4 text-xs text-[var(--muted)]">Filtered by: {search}</p> : null}
         <div className="flex flex-col lg:flex-row lg:flex-wrap gap-10 items-center lg:items-start">
           {visibleFolders.map((folder) => (
-            <FolderCard key={folder.id} folder={folder} links={links} />
+            <FolderCard key={folder.id} folder={folder} folderLinks={linksByFolder.get(folder.id) ?? emptyLinks} />
           ))}
         </div>
       </div>
@@ -33,10 +49,8 @@ function CollectionsContent() {
 
 export default function CollectionsPage() {
   return (
-    <ProductShell>
-      <Suspense fallback={<section className="px-10 py-12 mono text-sm text-[var(--muted)]">Loading collections...</section>}>
-        <CollectionsContent />
-      </Suspense>
-    </ProductShell>
+    <Suspense fallback={<ProductLoadingInline />}>
+      <CollectionsContent />
+    </Suspense>
   );
 }

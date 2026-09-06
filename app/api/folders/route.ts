@@ -1,20 +1,27 @@
 import { ok, fail } from "@/lib/api-response";
-import { seedFolders } from "@/lib/fixtures";
+import { createSupabaseServerClient } from "@/lib/supabase";
+import { createFolderRecord, listFolders, requireAuthenticatedUser } from "@/lib/supabase-repository";
 
 export async function GET() {
-  return ok(seedFolders);
+  try {
+    const supabase = await createSupabaseServerClient();
+    const user = await requireAuthenticatedUser(supabase);
+    return ok(await listFolders(supabase, user.id));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to load folders";
+    return fail(message, message === "Unauthorized" ? 401 : 400);
+  }
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as { name?: string };
-  if (!body.name?.trim()) return fail("Folder name is required");
-  const now = new Date().toISOString();
-  return ok({
-    id: `folder-${crypto.randomUUID()}`,
-    name: body.name.trim(),
-    description: null,
-    isDefault: false,
-    createdAt: now,
-    updatedAt: now
-  });
+  try {
+    const supabase = await createSupabaseServerClient();
+    const user = await requireAuthenticatedUser(supabase);
+    const body = (await request.json()) as { name?: string };
+    if (!body.name?.trim()) return fail("Folder name is required");
+    return ok(await createFolderRecord(supabase, user.id, body.name));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to create folder";
+    return fail(message, message === "Unauthorized" ? 401 : 400);
+  }
 }

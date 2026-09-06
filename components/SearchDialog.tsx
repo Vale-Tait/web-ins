@@ -31,20 +31,20 @@ export function SearchDialog({ open, onClose }: { open: boolean; onClose: () => 
     return Array.from(values).slice(0, 8);
   }, [links]);
 
+  const searchIndex = useMemo(() => {
+    const folderNames = new Map(folders.map((folder) => [folder.id, folder.name.toLowerCase()]));
+    return links.map((link) => ({
+      link,
+      fields: [link.domain, link.url, link.note, ...link.tags].map((field) => field.toLowerCase())
+        .concat(link.folderIds.map((id) => folderNames.get(id) ?? ""))
+    }));
+  }, [folders, links]);
+
   const results = useMemo(() => {
     const value = query.trim().replace(/^#/, "").toLowerCase();
-    if (!value) return [];
-    return links.filter((link) => {
-      const folderNames = link.folderIds.map((id) => folders.find((folder) => folder.id === id)?.name ?? "");
-      return (
-        link.domain.toLowerCase().includes(value) ||
-        link.url.toLowerCase().includes(value) ||
-        link.note.toLowerCase().includes(value) ||
-        link.tags.some((tag) => tag.toLowerCase().includes(value)) ||
-        folderNames.some((name) => name.toLowerCase().includes(value))
-      );
-    });
-  }, [folders, links, query]);
+    if (!open || !value) return [];
+    return searchIndex.filter(({ fields }) => fields.some((field) => field.includes(value))).map(({ link }) => link);
+  }, [open, searchIndex, query]);
 
   if (!open) return null;
 

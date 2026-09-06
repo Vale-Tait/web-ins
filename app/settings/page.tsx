@@ -1,31 +1,39 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { ProductShell } from "@/components/ProductShell";
-import { clearAuthSession, getAuthSession } from "@/lib/auth-store";
+import { useEffect, useState } from "react";
+import { clearAuthSession, getAuthSession, updatePassword } from "@/lib/auth-store";
 import type { AuthSession } from "@/lib/auth-store";
 
 function SettingsContent() {
   const router = useRouter();
-  const [session] = useState<AuthSession | null>(() => getAuthSession());
+  const [session, setSession] = useState<AuthSession | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const canChange = currentPassword.trim().length > 0 && newPassword.length >= 6 && newPassword === confirmPassword;
 
-  function changePassword(event: React.FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    getAuthSession().then(setSession);
+  }, []);
+
+  async function changePassword(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canChange) return;
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setMessage("Password updated.");
+    try {
+      await updatePassword(newPassword);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setMessage("Password updated.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to update password.");
+    }
   }
 
-  function logout() {
-    clearAuthSession();
+  async function logout() {
+    await clearAuthSession();
     router.replace("/auth");
   }
 
@@ -76,9 +84,5 @@ function SettingsContent() {
 }
 
 export default function SettingsPage() {
-  return (
-    <ProductShell>
-      <SettingsContent />
-    </ProductShell>
-  );
+  return <SettingsContent />;
 }

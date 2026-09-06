@@ -7,11 +7,13 @@ import type { AppData, InspirationCanvas } from "@/lib/types";
 export function useCanvasWorkspace({
   data,
   canvasId,
-  onDataChange
+  onDataChange,
+  onPersistCanvas
 }: {
   data: AppData;
   canvasId: string;
   onDataChange: (data: AppData) => void;
+  onPersistCanvas?: (canvas: InspirationCanvas) => Promise<void> | void;
 }) {
   const [history, setHistory] = useState<AppData[]>([]);
   const [future, setFuture] = useState<AppData[]>([]);
@@ -35,8 +37,17 @@ export function useCanvasWorkspace({
   const persistSoon = useCallback(() => {
     if (saveTimer.current) window.clearTimeout(saveTimer.current);
     setSaveState("Saving...");
-    saveTimer.current = window.setTimeout(() => setSaveState("Saved"), 800);
-  }, []);
+    saveTimer.current = window.setTimeout(() => {
+      const canvasToPersist = dataRef.current.canvases.find((item) => item.id === canvasId);
+      if (!canvasToPersist || !onPersistCanvas) {
+        setSaveState("Saved");
+        return;
+      }
+      Promise.resolve(onPersistCanvas(canvasToPersist))
+        .then(() => setSaveState("Saved"))
+        .catch(() => setSaveState("Save failed"));
+    }, 800);
+  }, [canvasId, onPersistCanvas]);
 
   const commit = useCallback(
     (updater: (canvas: InspirationCanvas, draft: AppData) => void, options: { history?: boolean } = {}) => {

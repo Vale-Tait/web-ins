@@ -7,4 +7,6 @@ coverage
 .env.*.local
 playwright-report
 test-results
-.next-dev.*.log
+*.log
+*.tsbuildinfo
+output/

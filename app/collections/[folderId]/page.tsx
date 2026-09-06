@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { CaretLeft, Trash, X } from "@phosphor-icons/react";
 import { useState } from "react";
-import { ProductShell } from "@/components/ProductShell";
 import { LinkTile } from "@/components/LinkTile";
 import { useApp } from "@/components/AppProvider";
 import type { Folder } from "@/lib/types";
@@ -192,9 +191,5 @@ function EditFolderDialog({
 }
 
 export default function FolderDetailPage() {
-  return (
-    <ProductShell>
-      <FolderDetailContent />
-    </ProductShell>
-  );
+  return <FolderDetailContent />;
 }

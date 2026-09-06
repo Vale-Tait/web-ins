@@ -37,7 +37,7 @@ export function LinkTile({ link, folderId = "all" }: { link: LinkItem; folderId?
     <div className="group relative min-w-0">
       <div className="relative aspect-[16/10] overflow-hidden border border-[var(--line)] bg-[var(--muted-panel)]">
         <Link href={detailHref} className="block h-full w-full">
-          <PreviewArt domain={link.domain} />
+          <PreviewArt domain={link.domain} url={link.url} screenshotUrl={link.screenshotUrl} />
         </Link>
       </div>
       <button

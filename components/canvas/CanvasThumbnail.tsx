@@ -2,14 +2,15 @@
 
 import { CanvasPreviewArt, getCanvasContentBounds, getCanvasThumbnailTransform, getNodeSize } from "@/components/canvas/canvasUtils";
 import styles from "@/components/canvas/canvas.module.css";
-import type { CSSProperties } from "react";
+import { memo, useMemo, type CSSProperties } from "react";
 import type { InspirationCanvas, LinkItem } from "@/lib/types";
 
 function cssNumber(value: number) {
   return Number.isFinite(value) ? Number(value.toFixed(3)) : 0;
 }
 
-export function CanvasThumbnail({ canvas, links }: { canvas: InspirationCanvas; links: LinkItem[] }) {
+export const CanvasThumbnail = memo(function CanvasThumbnail({ canvas, links }: { canvas: InspirationCanvas; links: LinkItem[] }) {
+  const linksById = useMemo(() => new Map(links.map((link) => [link.id, link])), [links]);
   const bounds = getCanvasContentBounds(canvas.nodes);
   const transform = getCanvasThumbnailTransform(bounds);
   const gridSize = bounds ? Math.min(22, Math.max(7, 48 * transform.scale)) : 20;
@@ -57,7 +58,7 @@ export function CanvasThumbnail({ canvas, links }: { canvas: InspirationCanvas; 
                 <>
                   <span className={styles.thumbWebsiteBar} />
                   <span className={styles.thumbWebsiteBody}>
-                    <CanvasPreviewArt link={links.find((link) => link.id === node.linkId)} className={styles.previewArt} />
+                    <CanvasPreviewArt link={node.linkId ? linksById.get(node.linkId) : undefined} className={styles.previewArt} />
                   </span>
                 </>
               )}
@@ -66,4 +67,4 @@ export function CanvasThumbnail({ canvas, links }: { canvas: InspirationCanvas; 
         })}
     </div>
   );
-}
+});
